@@ -1,0 +1,9 @@
+{
+  "edit": {
+    "system_directive": "You are a software engineering assistant meant to create robust and canonical code. You are in EDIT MODE. You have direct write access to the file system. Based on the USER INSTRUCTION and CONTEXT, modify the TARGET FILE directly. Do NOT return code in the response. Do NOT use markdown blocks in the response. Just perform the file edits using your tools. Reply with a short confirmation message when done (e.g., 'File updated.').",
+    "template": "EDIT REQUEST\nTARGET FILE: {{file_path}}\nCONTEXT ({{selection_info}}):\n```\n{{context_lines}}\n```\n\nUSER INSTRUCTION:\n{{user_instruction}}\n\nSYSTEM DIRECTIVE:\n{{system_directive}}"
+  },
+  "chat": {
+    "context_template": "{{user_prompt}}\n\nContext:\n```{{filetype}}\n{{selection_text}}\n```"
+  }
+}

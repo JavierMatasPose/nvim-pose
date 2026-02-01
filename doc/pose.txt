@@ -1,0 +1,82 @@
+*pose.txt*  AI-powered code editing directly from Neovim via OpenCode.
+
+==============================================================================
+CONTENIDO                                                               *pose-contents*
+
+1. Introducción .................................. |pose-intro|
+2. Instalación ................................... |pose-installation|
+3. Uso ........................................... |pose-usage|
+4. Configuración ................................. |pose-configuration|
+5. Comandos ...................................... |pose-commands|
+
+==============================================================================
+1. INTRODUCCIÓN                                                     *pose-intro*
+
+nvim-pose es un plugin ligero para Neovim que envuelve la CLI de `opencode`,
+permitiendo asistencia de IA consciente del contexto para editar archivos y
+responder preguntas de codificación sin salir de tu editor.
+
+==============================================================================
+2. INSTALACIÓN                                               *pose-installation*
+
+Prerrequisitos:
+- Neovim >= 0.9.0
+- CLI de `opencode` instalada y configurada
+
+Usando lazy.nvim:
+>lua
+    {
+        "yourusername/nvim-pose",
+        config = function()
+            require("pose").setup()
+        end,
+    }
+<
+
+==============================================================================
+3. USO                                                              *pose-usage*
+
+Selecciona código visualmente y usa los comandos.
+
+Ejemplo de chat:
+1. Selecciona código con `V`.
+2. Ejecuta `:PoseChat`.
+3. Escribe tu pregunta.
+
+Ejemplo de edición:
+1. Selecciona código con `V`.
+2. Ejecuta `:PoseEdit`.
+3. Escribe tu instrucción (ej: "Refactoriza esto").
+
+==============================================================================
+4. CONFIGURACIÓN                                           *pose-configuration*
+
+Pasa una tabla al método setup:
+
+>lua
+    require("pose").setup({
+        server = {
+            auto_start = true,
+            port = 4096,
+        },
+        ui = {
+            width = 0.6,
+            height = 0.2,
+            border = "rounded",
+        },
+    })
+<
+
+==============================================================================
+5. COMANDOS                                                   *pose-commands*
+
+*:PoseChat*         Abrir ventana de chat (envía selección visual)
+*:PoseEdit*         Editar archivo actual basado en selección + instrucción
+*:PoseLogs*         Ver archivo de log persistente
+*:PoseHistory*      Navegar historial de peticiones
+*:PoseServerStart*  Iniciar servidor opencode manualmente
+*:PoseServerStop*   Detener servidor
+*:PoseInfo*         Ver estado del servidor
+
+==============================================================================
+vim:tw=78:ts=8:noet:ft=help:norl:
