@@ -1,32 +1,32 @@
 *pose.txt*  AI-powered code editing directly from Neovim via OpenCode.
 
 ==============================================================================
-CONTENIDO                                                               *pose-contents*
+CONTENTS                                                               *pose-contents*
 
-1. Introducción .................................. |pose-intro|
-2. Instalación ................................... |pose-installation|
-3. Uso ........................................... |pose-usage|
-4. Configuración ................................. |pose-configuration|
-5. Comandos ...................................... |pose-commands|
-
-==============================================================================
-1. INTRODUCCIÓN                                                     *pose-intro*
-
-nvim-pose es un plugin ligero para Neovim que envuelve la CLI de `opencode`,
-permitiendo asistencia de IA consciente del contexto para editar archivos y
-responder preguntas de codificación sin salir de tu editor.
+1. Introduction .................................. |pose-intro|
+2. Installation .................................. |pose-installation|
+3. Usage ......................................... |pose-usage|
+4. Configuration ................................. |pose-configuration|
+5. Commands ...................................... |pose-commands|
 
 ==============================================================================
-2. INSTALACIÓN                                               *pose-installation*
+1. INTRODUCTION                                                     *pose-intro*
 
-Prerrequisitos:
+nvim-pose is a lightweight Neovim plugin that wraps the `opencode` CLI,
+allowing context-aware AI assistance for editing files and answering
+coding questions without leaving your editor.
+
+==============================================================================
+2. INSTALLATION                                               *pose-installation*
+
+Prerequisites:
 - Neovim >= 0.9.0
-- CLI de `opencode` instalada y configurada
+- `opencode` CLI installed and configured
 
-Usando lazy.nvim:
+Using lazy.nvim:
 >lua
     {
-        "yourusername/nvim-pose",
+        "JavierMatas/nvim-pose",
         config = function()
             require("pose").setup()
         end,
@@ -34,24 +34,24 @@ Usando lazy.nvim:
 <
 
 ==============================================================================
-3. USO                                                              *pose-usage*
+3. USAGE                                                              *pose-usage*
 
-Selecciona código visualmente y usa los comandos.
+Visually select code and use the commands.
 
-Ejemplo de chat:
-1. Selecciona código con `V`.
-2. Ejecuta `:PoseChat`.
-3. Escribe tu pregunta.
+Chat example:
+1. Select code with `V`.
+2. Run `:PoseChat`.
+3. Type your question.
 
-Ejemplo de edición:
-1. Selecciona código con `V`.
-2. Ejecuta `:PoseEdit`.
-3. Escribe tu instrucción (ej: "Refactoriza esto").
+Edit example:
+1. Select code with `V`.
+2. Run `:PoseEdit`.
+3. Type your instruction (e.g., "Refactor this").
 
 ==============================================================================
-4. CONFIGURACIÓN                                           *pose-configuration*
+4. CONFIGURATION                                           *pose-configuration*
 
-Pasa una tabla al método setup:
+Pass a table to the setup method:
 
 >lua
     require("pose").setup({
@@ -68,15 +68,15 @@ Pasa una tabla al método setup:
 <
 
 ==============================================================================
-5. COMANDOS                                                   *pose-commands*
+5. COMMANDS                                                   *pose-commands*
 
-*:PoseChat*         Abrir ventana de chat (envía selección visual)
-*:PoseEdit*         Editar archivo actual basado en selección + instrucción
-*:PoseLogs*         Ver archivo de log persistente
-*:PoseHistory*      Navegar historial de peticiones
-*:PoseServerStart*  Iniciar servidor opencode manualmente
-*:PoseServerStop*   Detener servidor
-*:PoseInfo*         Ver estado del servidor
+*:PoseChat*         Open chat window (sends visual selection)
+*:PoseEdit*         Edit current file based on selection + instruction
+*:PoseLogs*         View persistent log file
+*:PoseHistory*      Browse request history
+*:PoseServerStart*  Start opencode server manually
+*:PoseServerStop*   Stop server
+*:PoseInfo*         View server status
 
 ==============================================================================
 vim:tw=78:ts=8:noet:ft=help:norl:
