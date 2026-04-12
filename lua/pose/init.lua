@@ -478,12 +478,25 @@ function M.to_qf()
 end
 
 function M.history()
-    local entry = History.get_latest()
-    if entry then
-        UI.show_history_entry(entry)
-    else
+    local entries = History.get_all()
+    if #entries == 0 then
         print("Pose: No history available.")
+        return
     end
+
+    local items = {}
+    local reversed = {}
+    for i = #entries, 1, -1 do
+        table.insert(reversed, entries[i])
+        local summary = entries[i].prompt:gsub("\n", " "):sub(1, 80)
+        table.insert(items, string.format("#%d [%s] %s...", entries[i].id, entries[i].type:upper(), summary))
+    end
+
+    vim.ui.select(items, { prompt = "Pose History (Select to view full response):" }, function(choice, idx)
+        if choice and idx then
+            UI.show_history_entry(reversed[idx])
+        end
+    end)
 end
 
 return M
