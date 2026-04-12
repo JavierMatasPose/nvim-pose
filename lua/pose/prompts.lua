@@ -55,7 +55,7 @@ local function render_template(template, variables)
     local result = template
     for key, value in pairs(variables) do
         local placeholder = "{{" .. key .. "}}"
-        result = result:gsub(placeholder, tostring(value or ""))
+        result = result:gsub(placeholder, function() return tostring(value or "") end)
     end
     return result
 end
