@@ -2,18 +2,20 @@
 
 AI-powered code editing directly from Neovim via OpenCode.
 
-**nvim-pose** is a lightweight Neovim plugin that wraps the `opencode` CLI, enabling context-aware AI assistance for editing files and answering coding questions without leaving your editor.
+**nvim-pose** is a lightweight Neovim plugin that connects to the OpenCode HTTP API with real-time SSE streaming, enabling context-aware AI assistance for editing files and answering coding questions without leaving your editor.
 
 ## Features
 
+- **Real-time Streaming**: Responses stream into a floating window via SSE — no more truncated outputs
+- **Session Management**: Persistent sessions per project, resume conversations across Neovim restarts
 - **Direct File Editing**: AI writes changes directly to disk, Neovim reloads automatically
 - **Smart Context**: Sends visual selections and file context to AI
 - **Model Selection**: Cycle through available models with `<Tab>` in chat window
+- **Abort Support**: Cancel running requests with `:PoseAbort`
 - **Request History**: Navigate previous requests with `:PoseHistory`
 - **Persistent Logging**: All interactions logged to `~/.local/state/nvim/pose.log`
 - **Lazy Server**: `opencode serve` starts automatically when needed
 - **Template System**: Customizable prompts via `prompts.json`
-
 ## Prerequisites
 
 - Neovim >= 0.11
@@ -126,10 +128,13 @@ Example prompt customization:
 
 | Command | Description |
 |---------|-------------|
-| `:PoseChat` | Open chat window (sends visual selection as context) |
+| `:PoseChat` | Open chat window with real-time streaming response |
 | `:PoseEdit` | Edit current file based on visual selection + instruction |
+| `:PoseNewChat` | Start a new session (clears current conversation) |
+| `:PoseSessions` | List and switch between existing sessions |
+| `:PoseAbort` | Cancel the currently running request |
 | `:PoseLogs` | View persistent log file in new tab |
-| `:PoseHistory` | Navigate request history (`n`/`p` to cycle, `<CR>` to rerun) |
+| `:PoseHistory` | Select and view full request history details |
 | `:PoseToQf` | Export history to Quickfix list |
 | `:PoseServerStart` | Manually start `opencode serve` |
 | `:PoseServerStop` | Stop background server |
@@ -177,8 +182,8 @@ V
 
 ```vim
 :PoseHistory
-" Navigate with n/p
-" Press <CR> to rerun a previous request
+" Select a request from the picker to view its full prompt and response
+" In the viewer window, navigate between entries using n/p
 ```
 
 ### Key Bindings (in Chat Window)
@@ -186,7 +191,8 @@ V
 | Key | Action |
 |-----|--------|
 | `<CR>` | Send message |
-| `<C-c>` / `<Esc>` | Close window |
+| `<C-c>` | Close window / Abort running request |
+| `<Esc>` | Close window |
 | `<Tab>` | Next model |
 | `<S-Tab>` | Previous model |
 
@@ -206,20 +212,24 @@ V
           │ :4096              │
           └────────┬───────────┘
                    │
-                   ▼
-┌─────────────────────────────────────────────────────┐
-│ opencode run --attach                               │
-│  ├─ Sends prompt + context                          │
-│  ├─ Receives streaming response                     │
-│  └─ Writes files directly (via permissions)         │
-└─────────────────────────────────────────────────────┘
-                   │
-                   ▼
-          Files updated on disk
-                   │
-                   ▼
-      Neovim reloads buffers (:checktime)
+        ┌──────────┴──────────┐
+        ▼                     ▼
+  POST /prompt_async     GET /event (SSE)
+  (fire & forget)        (persistent stream)
+        │                     │
+        │              ┌──────┴──────────────┐
+        │              │ message.part.updated │→ streaming text
+        │              │ session.idle         │→ work complete
+        │              │ session.error        │→ error handling
+        │              └─────────────────────┘
+        ▼
+  Files updated on disk
+        │
+        ▼
+  Neovim reloads buffers (:checktime)
 ```
+
+The plugin connects to the OpenCode HTTP API and listens for SSE events. When you send a prompt, it fires an async request and streams the response in real-time into a floating window. The `session.idle` event signals that **all** work is done — including subagent delegations — solving the truncated response problem of the old CLI approach.
 
 ## Troubleshooting
 
