@@ -10,7 +10,6 @@ local UI = require("pose.ui")
 local Spinner = require("pose.spinner")
 local History = require("pose.history")
 local Prompts = require("pose.prompts")
-local Client = require("pose.client")
 
 local active_spinners = {}
 
@@ -348,81 +347,7 @@ function M.edit(opts)
     end)
 end
 
-function M.chat_legacy(opts)
-    opts = opts or {}
-    Server.ensure_running(function(running)
-        if not running then
-            Log.error("Could not start server. Check logs.")
-            return
-        end
 
-        local current_buf = vim.api.nvim_get_current_buf()
-        local current_line = vim.api.nvim_win_get_cursor(0)[1] - 1
-        local spinner_key = string.format("%d:%d", current_buf, current_line)
-
-        local selection_text = nil
-        if opts.range and opts.range > 0 then
-            local start_line = opts.line1 - 1
-            local end_line = opts.line2
-            local lines = vim.api.nvim_buf_get_lines(current_buf, start_line, end_line, false)
-            if lines and #lines > 0 then
-                selection_text = table.concat(lines, "\n")
-            end
-        end
-
-        UI.prompt_with_model({
-            title = " Pose Chat (Legacy) ",
-            on_confirm = function(prompt, model)
-                if prompt == "" then
-                    return
-                end
-
-                local final_prompt = prompt
-                if selection_text then
-                    local filetype = vim.bo[current_buf].filetype or ""
-                    final_prompt = Prompts.chat_context(prompt, filetype, selection_text)
-                end
-
-                if active_spinners[spinner_key] then
-                    active_spinners[spinner_key]:stop()
-                    active_spinners[spinner_key] = nil
-                end
-
-                local spinner = Spinner.new(current_buf, current_line)
-                spinner:start("Pose: thinking...")
-                active_spinners[spinner_key] = spinner
-
-                local file_path = vim.api.nvim_buf_get_name(current_buf)
-                local req_id = History.start_request("chat", file_path, current_line + 1, final_prompt)
-
-                Client.run(final_prompt, model, function(err, response)
-                    vim.schedule(function()
-                        if active_spinners[spinner_key] then
-                            active_spinners[spinner_key]:stop()
-                            active_spinners[spinner_key] = nil
-                        end
-                    end)
-
-                    if err then
-                        History.complete_request(req_id, "error", err)
-                        vim.schedule(function()
-                            UI.show_error("Server error:\n" .. err)
-                        end)
-                        Log.error("Chat error: " .. err)
-                    else
-                        History.complete_request(req_id, "success", response)
-                        vim.schedule(function()
-                            UI.show_result(response)
-                        end)
-                    end
-                end)
-            end,
-            on_cancel = function()
-                Log.debug("Chat cancelled by user.")
-            end,
-        })
-    end)
-end
 
 function M.server_stop()
     Events.disconnect()

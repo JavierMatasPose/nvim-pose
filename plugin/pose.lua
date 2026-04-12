@@ -47,6 +47,3 @@ vim.api.nvim_create_user_command("PoseAbort", function()
     require("pose").abort()
 end, {})
 
-vim.api.nvim_create_user_command("PoseChatLegacy", function(opts)
-    require("pose").chat_legacy(opts)
-end, { range = true })

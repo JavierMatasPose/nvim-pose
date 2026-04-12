@@ -167,7 +167,7 @@ function M.stop()
     if pid_to_kill then
         local ret = vim.loop.kill(pid_to_kill, 15) 
         if ret ~= 0 then
-            os.execute("kill -9 " .. pid_to_kill .. " > /dev/null 2>&1")
+            vim.loop.kill(pid_to_kill, 9)
         end
         Log.info("Servidor detenido (PID: " .. pid_to_kill .. ")")
         
