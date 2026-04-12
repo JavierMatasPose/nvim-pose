@@ -191,6 +191,88 @@ function M.show_result(text)
     end, map_opts)
 end
 
+--- @param on_abort fun()|nil called when user presses C-c
+--- @return number buf, number win
+function M.open_streaming_result(on_abort)
+    local ui_conf = Config.options.ui
+    local buf, win = create_centered_window({
+        width = ui_conf.width,
+        height = 0.6,
+        title = " ⏳ Pose: Processing... ",
+    })
+
+    vim.bo[buf].filetype = "markdown"
+    vim.bo[buf].bufhidden = "wipe"
+    vim.bo[buf].modifiable = true
+    vim.api.nvim_buf_set_lines(buf, 0, -1, false, {})
+
+    local map_opts = { noremap = true, silent = true, buffer = buf }
+
+    local function close()
+        if vim.api.nvim_win_is_valid(win) then
+            vim.api.nvim_win_close(win, true)
+        end
+    end
+
+    vim.keymap.set("n", "<Esc>", close, map_opts)
+    vim.keymap.set("n", "q", close, map_opts)
+
+    if on_abort then
+        vim.keymap.set("n", "<C-c>", function()
+            on_abort()
+            close()
+        end, map_opts)
+    end
+
+    return buf, win
+end
+
+--- @param buf number
+--- @param win number
+--- @param text string
+function M.append_streaming(buf, win, text)
+    vim.schedule(function()
+        if not vim.api.nvim_buf_is_valid(buf) then
+            return
+        end
+
+        local lines = vim.split(text, "\n")
+
+        vim.bo[buf].modifiable = true
+        local line_count = vim.api.nvim_buf_line_count(buf)
+        local last_line = vim.api.nvim_buf_get_lines(buf, line_count - 1, line_count, false)[1] or ""
+
+        if last_line == "" and line_count == 1 then
+            vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+        else
+            local merged_first = last_line .. lines[1]
+            vim.api.nvim_buf_set_lines(buf, line_count - 1, line_count, false, { merged_first })
+            if #lines > 1 then
+                vim.api.nvim_buf_set_lines(buf, -1, -1, false, vim.list_slice(lines, 2))
+            end
+        end
+        vim.bo[buf].modifiable = false
+
+        if vim.api.nvim_win_is_valid(win) then
+            local new_count = vim.api.nvim_buf_line_count(buf)
+            vim.api.nvim_win_set_cursor(win, { new_count, 0 })
+        end
+    end)
+end
+
+--- @param buf number
+--- @param win number
+function M.finalize_streaming(buf, win)
+    vim.schedule(function()
+        if vim.api.nvim_win_is_valid(win) then
+            vim.api.nvim_win_set_config(win, { title = " ✓ Pose: Complete " })
+        end
+        if vim.api.nvim_buf_is_valid(buf) then
+            vim.bo[buf].modifiable = false
+        end
+    end)
+end
+
 --- @param msg string
 function M.show_error(msg)
     local buf, win = create_centered_window({

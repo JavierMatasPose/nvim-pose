@@ -35,6 +35,18 @@ vim.api.nvim_create_user_command("PoseServerStop", function()
     require("pose").server_stop()
 end, {})
 
-vim.api.nvim_create_user_command("PoseTestRequest", function()
-    require("pose").test_request()
+vim.api.nvim_create_user_command("PoseNewChat", function()
+    require("pose").new_session()
 end, {})
+
+vim.api.nvim_create_user_command("PoseSessions", function()
+    require("pose").sessions()
+end, {})
+
+vim.api.nvim_create_user_command("PoseAbort", function()
+    require("pose").abort()
+end, {})
+
+vim.api.nvim_create_user_command("PoseChatLegacy", function(opts)
+    require("pose").chat_legacy(opts)
+end, { range = true })
