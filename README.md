@@ -16,8 +16,6 @@ AI-powered code editing directly from Neovim via OpenCode.
 - **Persistent Logging**: All interactions logged to `~/.local/state/nvim/pose.log`
 - **Lazy Server**: `opencode serve` starts automatically when needed
 - **Template System**: Customizable prompts via `prompts.json`
-- **Legacy Fallback**: `:PoseChatLegacy` preserves the old `opencode run --attach` behavior
-
 ## Prerequisites
 
 - Neovim >= 0.11
@@ -135,9 +133,8 @@ Example prompt customization:
 | `:PoseNewChat` | Start a new session (clears current conversation) |
 | `:PoseSessions` | List and switch between existing sessions |
 | `:PoseAbort` | Cancel the currently running request |
-| `:PoseChatLegacy` | Chat using legacy `opencode run --attach` (fallback) |
 | `:PoseLogs` | View persistent log file in new tab |
-| `:PoseHistory` | Navigate request history (`n`/`p` to cycle, `<CR>` to rerun) |
+| `:PoseHistory` | Select and view full request history details |
 | `:PoseToQf` | Export history to Quickfix list |
 | `:PoseServerStart` | Manually start `opencode serve` |
 | `:PoseServerStop` | Stop background server |
@@ -185,8 +182,8 @@ V
 
 ```vim
 :PoseHistory
-" Navigate with n/p
-" Press <CR> to rerun a previous request
+" Select a request from the picker to view its full prompt and response
+" In the viewer window, navigate between entries using n/p
 ```
 
 ### Key Bindings (in Chat Window)
