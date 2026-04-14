@@ -51,6 +51,14 @@ function M.load()
     return prompts_config
 end
 
+local function relative_path(abs_path)
+    local cwd = vim.fn.getcwd() .. "/"
+    if abs_path:sub(1, #cwd) == cwd then
+        return abs_path:sub(#cwd + 1)
+    end
+    return vim.fn.fnamemodify(abs_path, ":t")
+end
+
 local function render_template(template, variables)
     local result = template
     for key, value in pairs(variables) do
@@ -68,7 +76,7 @@ function M.edit_request(file_path, selection_info, context_lines, user_instructi
     end
     
     return render_template(config.edit.template, {
-        file_path = file_path,
+        file_path = relative_path(file_path),
         selection_info = selection_info,
         context_lines = context_lines,
         user_instruction = user_instruction,

@@ -12,13 +12,11 @@ local function check_file_exists(path)
 end
 
 local function get_opencode_version()
-  local handle = io.popen("opencode --version 2>&1")
-  if not handle then
+  local obj = vim.system({ "opencode", "--version" }, { text = true }):wait()
+  if obj.code ~= 0 then
     return nil
   end
-  local result = handle:read("*a")
-  handle:close()
-  return result:gsub("^%s*(.-)%s*$", "%1")
+  return vim.trim(obj.stdout)
 end
 
 function M.check()
@@ -133,11 +131,9 @@ function M.check()
   end
 
   -- Check for common port conflicts
-  local handle = io.popen("lsof -i :4096 2>/dev/null")
-  if handle then
-    local port_output = handle:read("*a")
-    handle:close()
-    if port_output and port_output ~= "" then
+  if vim.fn.executable("lsof") == 1 then
+    local obj = vim.system({ "lsof", "-i", ":4096" }, { text = true }):wait()
+    if obj.code == 0 and obj.stdout and obj.stdout ~= "" then
       vim.health.warn(
         "Port 4096 is in use",
         {
@@ -150,14 +146,14 @@ function M.check()
 
   -- Check nvim version
   local nvim_version = vim.version()
-  if nvim_version.minor >= 8 then
+  if nvim_version.minor >= 10 then
     vim.health.ok(
       string.format("Neovim version %d.%d.%d", nvim_version.major, nvim_version.minor, nvim_version.patch)
     )
   else
     vim.health.error(
       "Neovim version too old",
-      { "nvim-pose requires Neovim >= 0.8", "Current: " .. vim.version() }
+      { "nvim-pose requires Neovim >= 0.10", "Current: " .. vim.version() }
     )
   end
 end

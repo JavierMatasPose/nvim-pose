@@ -82,7 +82,25 @@ function M.start(cb)
 
         Log.info("Iniciando opencode serve...")
 
-        local cmd = { conf.opencode_command, "serve", "--port", tostring(conf.port), "--hostname", conf.host }
+        local cmd_name = conf.opencode_command
+        if vim.fn.executable(cmd_name) ~= 1 then
+            local err_msg = string.format(
+                "[Pose] opencode_command '%s' not found in PATH\n\n" ..
+                "Troubleshooting:\n" ..
+                "1. Ensure 'opencode' is installed and in PATH\n" ..
+                "2. Run: opencode --version\n" ..
+                "3. Check :PoseLogs for details",
+                cmd_name
+            )
+            Log.error(err_msg)
+            vim.notify(err_msg, vim.log.levels.ERROR)
+            if cb then
+                cb(false, err_msg)
+            end
+            return
+        end
+
+        local cmd = { cmd_name, "serve", "--port", tostring(conf.port), "--hostname", conf.host }
 
         local handle, pid = vim.loop.spawn(cmd[1], {
             args = { unpack(cmd, 2) },
@@ -177,16 +195,17 @@ function M.stop()
 
     if vim.fn.executable("lsof") == 1 then
         local conf = Config.options.server or { port = 4096 }
-        local cmd = string.format("lsof -t -i :%d", conf.port)
-        local output = vim.fn.system(cmd)
-
-        if output and output ~= "" then
-            local port_pid = tonumber(vim.trim(output))
-            if port_pid and port_pid ~= pid_to_kill then
-                vim.loop.kill(port_pid, 9)
-                Log.info("Servidor zombie eliminado via lsof (PID: " .. port_pid .. ")")
-            end
-        end
+        vim.system({ "lsof", "-t", "-i", ":" .. tostring(conf.port) }, { text = true }, function(obj)
+            vim.schedule(function()
+                if obj.code == 0 and obj.stdout and obj.stdout ~= "" then
+                    local port_pid = tonumber(vim.trim(obj.stdout:match("^(%d+)")))
+                    if port_pid and port_pid ~= pid_to_kill then
+                        vim.loop.kill(port_pid, 9)
+                        Log.info("Servidor zombie eliminado via lsof (PID: " .. port_pid .. ")")
+                    end
+                end
+            end)
+        end)
     end
     
     state.running = false

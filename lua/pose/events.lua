@@ -42,13 +42,15 @@ local function parse_sse_frames(raw)
 
         if data_str then
             local ok, data = pcall(vim.json.decode, data_str)
-            if ok then
-                -- OpenCode server doesn't always send 'event:' lines.
-                -- The event type is embedded in the JSON data.type field.
+            if ok and type(data) == "table" then
                 local final_event_type = event_type or data.type or "unknown"
-                table.insert(frames, { event_type = final_event_type, data = data })
+                if type(final_event_type) == "string" then
+                    table.insert(frames, { event_type = final_event_type, data = data })
+                else
+                    Log.debug("SSE: invalid event type: " .. tostring(final_event_type))
+                end
             else
-                Log.debug("SSE: failed to parse JSON data: " .. data_str)
+                Log.debug("SSE: failed to parse or invalid JSON data: " .. tostring(data_str))
             end
         end
     end

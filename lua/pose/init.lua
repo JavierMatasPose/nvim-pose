@@ -296,7 +296,7 @@ function M.edit(opts)
                             end
 
                             History.complete_request(req_id, "success", "Edit completed")
-                            vim.cmd("checktime " .. current_buf)
+                            vim.cmd({ cmd = "checktime", args = { tostring(current_buf) } })
                             print("Pose: Edit complete. Buffer reloaded.")
 
                             for _, hid in ipairs(handler_ids) do
@@ -440,7 +440,7 @@ function M.logs()
         return
     end
 
-    vim.cmd("tabnew " .. log_file)
+    vim.cmd.tabnew(vim.fn.fnameescape(log_file))
     vim.cmd("normal! G")
 end
 
